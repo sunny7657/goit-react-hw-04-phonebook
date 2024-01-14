@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
-import { Notify } from 'notiflix';
-import { useState } from 'react';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { useEffect, useState } from 'react';
 import { Section } from './Section/Section';
 import { FormAddContact } from './FormAddContact/FormAddContact';
 import { Filter } from './Filter/Filter';
@@ -9,6 +9,17 @@ import { ContactList } from './ContactList/ContactList';
 export const App = () => {
   const [contacts, setContacts] = useState([]);
   const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    const localData = localStorage.getItem('contacts');
+    if (localData && JSON.parse(localData).length > 0) {
+      setContacts(JSON.parse(localData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
   const handleSubmit = data => {
     const newContact = { ...data, id: nanoid() };
@@ -19,20 +30,18 @@ export const App = () => {
     if (doesExist) {
       alert(`${newContact.name} is already in contacts.`);
     } else {
-      setContacts(prevContacts => ({
-        contacts: [...prevContacts, newContact],
-      }));
+      setContacts(prevContacts => [...prevContacts, newContact]);
     }
   };
 
   const handleFilteredContacts = event => {
-    setFilter({ filter: event.target.value });
+    setFilter(event.target.value);
   };
 
   const deleteContact = id => {
-    setContacts(prevContacts => ({
-      contacts: prevContacts.filter(contact => contact.id !== id),
-    }));
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => contact.id !== id)
+    );
     Notify.info('The contact was deleted');
   };
 
